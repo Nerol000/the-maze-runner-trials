@@ -20,6 +20,7 @@ public class TheMazeRunner implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		//Heloo
 
 		ModEffects.registerEffects();
 		ModItems.registerModItems();
