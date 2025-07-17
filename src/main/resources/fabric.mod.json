@@ -1,0 +1,40 @@
+{
+	"schemaVersion": 1,
+	"id": "mazerunner",
+	"version": "${version}",
+	"name": "The Maze Runner",
+	"description": "Be in the Glade by night!",
+	"authors": [
+		"Nerol"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/mazerunner/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"net.nerol.mazerunner.TheMazeRunner"
+		],
+		"fabric-datagen": [
+			"net.nerol.mazerunner.TheMazeRunnerDataGenerator"
+		],
+		"client": [
+			"net.nerol.mazerunner.TheMazeRunnerClient"
+		]
+	},
+	"mixins": [
+		"mazerunner.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.16.14",
+		"minecraft": "~1.21.7",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}

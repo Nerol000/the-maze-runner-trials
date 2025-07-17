@@ -1,0 +1,16 @@
+{
+	"required": true,
+	"package": "net.nerol.mazerunner.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"ExampleMixin",
+		"MixinLivingEntity",
+		"MixinItem"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}
