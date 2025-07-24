@@ -24,15 +24,15 @@ public class PlayerDeathHandler {
                 //String playerName = player.getName().getString();
                 World world = player.getWorld();
 
-                if (entity.hasStatusEffect(ModEffects.FLARE)); {
+                if (entity.hasStatusEffect(ModEffects.FLARE)) {
                     HuskEntity husk = new HuskEntity(EntityType.HUSK, world);
                     husk.refreshPositionAndAngles(deathPos.getX() + 0.5, deathPos.getY(), deathPos.getZ() + 0.5, 0.0F, 0.0F);
 
                     husk.setPersistent();
 
                     Objects.requireNonNull(husk.getAttributeInstance(EntityAttributes.MAX_HEALTH)).setBaseValue(40.0);  // 40 HP
-                    Objects.requireNonNull(husk.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE)).setBaseValue(6.5f);
-                    Objects.requireNonNull(husk.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED)).setBaseValue(0.266f);
+                    Objects.requireNonNull(husk.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE)).setBaseValue(7.5f);
+                    Objects.requireNonNull(husk.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED)).setBaseValue(0.275f);
                     Objects.requireNonNull(husk.getAttributeInstance(EntityAttributes.ARMOR)).setBaseValue(5.0);
                     Objects.requireNonNull(husk.getAttributeInstance(EntityAttributes.FOLLOW_RANGE)).setBaseValue(255.0);
 
