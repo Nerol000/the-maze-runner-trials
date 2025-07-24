@@ -5,6 +5,7 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.World;
 import net.nerol.mazerunner.effect.ModEffects;
@@ -18,10 +19,9 @@ import java.util.List;
 
 @Mixin(Item.class)
 public class MixinItem {
-
     @Inject(method = "finishUsing", at = @At("HEAD"), cancellable = true)
     private void onFinishUsing(ItemStack stack, World world, LivingEntity user, CallbackInfoReturnable<ItemStack> cir) {
-        if (!world.isClient) {
+        if (!world.isClient && stack.getItem() == Items.MILK_BUCKET) {
             List<RegistryEntry<StatusEffect>> toRemove = new ArrayList<>();
             for (StatusEffectInstance effect : user.getStatusEffects()) {
                 RegistryEntry<StatusEffect> effectType = effect.getEffectType();  // Keep as RegistryEntry
@@ -45,3 +45,4 @@ public class MixinItem {
         }
     }
 }
+
