@@ -40,9 +40,8 @@ public class FlareInjectorItem extends Item {
 
             if (user.hasStatusEffect(ModEffects.FLARE)) {
                 user.addStatusEffect(new StatusEffectInstance(ModEffects.FLARE,
-                        1728000, Objects.requireNonNull(user.getStatusEffect(FLARE)).getAmplifier(), false,true));
+                        1728000, Objects.requireNonNull(user.getStatusEffect(FLARE)).getAmplifier() + 1, false,true));
             }
-
             else {
                 user.addStatusEffect(new StatusEffectInstance(ModEffects.FLARE, 1728000, 0, false, true));
             }
@@ -64,7 +63,7 @@ public class FlareInjectorItem extends Item {
 
             if (target.hasStatusEffect(ModEffects.FLARE)) {
                 target.addStatusEffect(new StatusEffectInstance(ModEffects.FLARE,
-                        1728000, Objects.requireNonNull(target.getStatusEffect(FLARE)).getAmplifier(), false,true));
+                        1728000, Objects.requireNonNull(target.getStatusEffect(FLARE)).getAmplifier() + 1, false,true));
             }
             else {
                 target.addStatusEffect(new StatusEffectInstance(ModEffects.FLARE,
