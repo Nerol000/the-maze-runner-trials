@@ -20,6 +20,14 @@ repositories {
 	maven { url 'https://maven.fabricmc.net/' }
 	maven { url 'https://libraries.minecraft.net/' }
 	mavenCentral()
+
+	maven {
+		name = 'GeckoLib'
+		url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+		content {
+			includeGroupByRegex("software\\.bernie.*")
+		}
+	}
 }
 
 fabricApi {
@@ -36,6 +44,8 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	// Gecko-lib
+	modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
 
 }
 
