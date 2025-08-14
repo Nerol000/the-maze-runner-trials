@@ -1,0 +1,38 @@
+{
+  "griever.bite": {
+    "category": "hostile",
+    "subtitle": "sounds.mazerunner.griever.bite",
+    "sounds": [
+      "mazerunner:griever_bite1",
+      "mazerunner:griever_bite2"
+    ]
+  },
+  "griever.idle": {
+    "category": "hostile",
+    "subtitle": "sounds.mazerunner.griever.idle",
+    "sounds": [
+      "mazerunner:griever_idle1",
+      "mazerunner:griever_idle2",
+      "mazerunner:griever_idle3"
+    ]
+  },
+  "griever.roar": {
+    "category": "hostile",
+    "subtitle": "sounds.mazerunner.griever.roar",
+    "sounds": [
+      "mazerunner:griever_roar1",
+      "mazerunner:griever_roar2",
+      "mazerunner:griever_roar3"
+    ]
+  },
+  "griever.walk": {
+    "category": "hostile",
+    "subtitle": "sounds.mazerunner.griever.walk",
+    "sounds": [
+      "mazerunner:griever_walk1",
+      "mazerunner:griever_walk2",
+      "mazerunner:griever_walk3",
+      "mazerunner:griever_walk4"
+    ]
+  }
+}

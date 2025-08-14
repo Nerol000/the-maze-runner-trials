@@ -45,6 +45,8 @@ public class FlareInjectorItem extends Item {
             else {
                 user.addStatusEffect(new StatusEffectInstance(ModEffects.FLARE, 1728000, 0, false, true));
             }
+
+            user.getItemCooldownManager().set(stack, 100);
             return ActionResult.SUCCESS;
         }
         return ActionResult.PASS;
@@ -70,6 +72,7 @@ public class FlareInjectorItem extends Item {
                         1728000, 0, false, true));
             }
 
+            user.getItemCooldownManager().set(stack, 100);
             return ActionResult.SUCCESS;
         }
         return ActionResult.PASS;

@@ -3,8 +3,12 @@ package net.nerol.mazerunner;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.nerol.mazerunner.SoundEvent.ModSounds;
 import net.nerol.mazerunner.effect.ModEffects;
+import net.nerol.mazerunner.entity.GrieverEntity;
+import net.nerol.mazerunner.entity.ModEntities;
 import net.nerol.mazerunner.event.PlayerDeathHandler;
 import net.nerol.mazerunner.item.ModItems;
 import org.slf4j.Logger;
@@ -20,6 +24,10 @@ public class TheMazeRunner implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		ModEntities.register();
+		FabricDefaultAttributeRegistry.register(ModEntities.GRIEVER, GrieverEntity.createAttributes());
+
+		ModSounds.registerSounds();
 
 		ModEffects.registerEffects();
 		ModItems.registerModItems();

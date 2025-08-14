@@ -50,6 +50,7 @@ public class FlareCureItem extends Item {
                 if (maxHealth != null) {
                     maxHealth.setBaseValue(20.0d);
                 }
+                user.getItemCooldownManager().set(stack, 100);
 
                 return ActionResult.SUCCESS;
             }
@@ -80,6 +81,8 @@ public class FlareCureItem extends Item {
                 if (maxHealth != null) {
                     maxHealth.setBaseValue(20.0d);
                 }
+
+                user.getItemCooldownManager().set(stack, 100);
 
                 return ActionResult.SUCCESS;
             }

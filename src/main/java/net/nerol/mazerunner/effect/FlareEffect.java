@@ -6,9 +6,11 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.nerol.mazerunner.entity.GrieverEntity;
 
 import java.util.Random;
 
@@ -24,7 +26,7 @@ public class FlareEffect extends StatusEffect {
     @Override
     public boolean applyUpdateEffect(ServerWorld world, LivingEntity entity, int amplifier) {
 
-        if (!world.isClient) {
+        if (!world.isClient && !(entity instanceof GrieverEntity)) {
 
             StatusEffectInstance effectInstance = entity.getStatusEffect(FLARE);
             if (effectInstance == null) return true;
@@ -33,6 +35,20 @@ public class FlareEffect extends StatusEffect {
             // Infect nearby Hostile entities
             for (HostileEntity nearby : world.getEntitiesByClass(
                     HostileEntity.class,
+                    entity.getBoundingBox().expand(6 + (amplifier / 1.25)), // 6-block radius + amplifier
+                    e -> e != entity && !e.hasStatusEffect(ModEffects.FLARE) && !(e instanceof GrieverEntity))) {
+
+                if (RANDOM.nextFloat() < 0.00018518518f + (amplifier * 0.00003)) { // 1 in 5400 per tick (roughly being around for 4m30s)
+                    nearby.addStatusEffect(new StatusEffectInstance(ModEffects.FLARE,
+                            1728000,           // duration in ticks (24hr)
+                            amplifier,     // same amplifier
+                            false,         // ambient
+                            true));        // show particles
+                }
+            }
+            // For Villager entities
+            for (VillagerEntity nearby : world.getEntitiesByClass(
+                    VillagerEntity.class,
                     entity.getBoundingBox().expand(6 + (amplifier / 1.25)), // 6-block radius + amplifier
                     e -> e != entity && !e.hasStatusEffect(ModEffects.FLARE))) {
 
@@ -58,8 +74,6 @@ public class FlareEffect extends StatusEffect {
                             true));        // show particles
                 }
             }
-
-
 
             //13200
             if (duration % 13200 - (amplifier * 40) == 0 && duration != 0) {   //every 11 minutes
