@@ -207,6 +207,18 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
     }
 
     @Override
+    public void tickMovement() {
+        super.tickMovement();
+
+        if (this.isClimbing()) {
+            // Prevent being pushed off wall
+            if (this.horizontalCollision) {
+                this.setVelocity(this.getVelocity().multiply(1.0, 1.0, 1.0)); // keep current velocity
+            }
+        }
+    }
+
+    @Override
     public void tick() {
         super.tick();
 
