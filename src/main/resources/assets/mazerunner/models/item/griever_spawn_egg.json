@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "mazerunner:item/griever_spawn_egg"
+  }
+}

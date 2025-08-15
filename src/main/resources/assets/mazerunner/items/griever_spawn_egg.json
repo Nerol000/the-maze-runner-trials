@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type" : "minecraft:model",
+    "model": "mazerunner:item/griever_spawn_egg"
+  }
+}
