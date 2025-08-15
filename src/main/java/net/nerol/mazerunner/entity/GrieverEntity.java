@@ -213,6 +213,7 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
         if (this.isClimbing()) {
             // Prevent being pushed off wall
             if (this.horizontalCollision) {
+                this.setVelocity(this.getVelocity().x, 0.25, this.getVelocity().z);
                 this.setVelocity(this.getVelocity().multiply(1.0, 1.0, 1.0)); // keep current velocity
             }
         }
