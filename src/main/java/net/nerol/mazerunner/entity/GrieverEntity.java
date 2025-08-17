@@ -198,7 +198,7 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
     protected <T extends GeoAnimatable> AnimationController<T> roarController() {
         return new AnimationController<>("Roar", 0, event -> {
             if (this.dataTracker.get(IS_ROARING)) {
-                return event.setAndContinue(ROAR_ANIM); // always continue while roaring
+                return event.setAndContinue(ROAR_ANIM);
             }
             if (event.isCurrentAnimation(ROAR_ANIM)) {
                 return PlayState.CONTINUE;
@@ -238,7 +238,8 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
             decrementAttackTicks(STRIKE_TICKS, STRIKE_ATTACK);
             decrementAttackTicks(ROAR_TICKS, IS_ROARING);
             /*
-            if (dataTracker.get(BITE_TICKS) == 7) { // halfway through bite anim
+            if (dataTracker.get(BITE_TICKS) == 7) {
+                System.out.println("Bite damage tick triggered at tick: " + dataTracker.get(BITE_TICKS));
                 LivingEntity target = getTarget();
                 if (target != null && this.squaredDistanceTo(target) <= 16.0D) {
                     ServerWorld serverWorld = (ServerWorld) this.getWorld();
@@ -266,8 +267,7 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
                     target.addVelocity(direction.x * 0.45, -0.66, direction.z * 0.45);
                     target.velocityDirty = true;
                 }
-            }
-            */
+            }*/
         }
     }
 

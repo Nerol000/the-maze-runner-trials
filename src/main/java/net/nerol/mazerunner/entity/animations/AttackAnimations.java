@@ -70,6 +70,7 @@ public class AttackAnimations {
             Vec3d direction = target.getPos().subtract(attacker.getPos()).normalize();
             target.addVelocity(direction.x * 0.45, -0.66, direction.z * 0.45);
             target.velocityDirty = true;
+
         }
     }
 }
