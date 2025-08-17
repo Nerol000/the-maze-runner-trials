@@ -3,7 +3,6 @@ package net.nerol.mazerunner.entity;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.SpiderNavigation;
@@ -13,8 +12,6 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -24,11 +21,9 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.nerol.mazerunner.SoundEvent.ModSounds;
 import net.nerol.mazerunner.TheMazeRunner;
-import net.nerol.mazerunner.effect.ModEffects;
 import net.nerol.mazerunner.entity.goals.GrieverAttackGoal;
 import net.nerol.mazerunner.item.ModItems;
 import software.bernie.geckolib.animatable.GeoAnimatable;
@@ -47,7 +42,6 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
     private boolean stingAnimationTriggered = false;
     private boolean strikeAnimationTriggered = false;
 
-    // TrackedData keys for syncing attack states & ticks
     private static final TrackedData<Boolean> CHASING = DataTracker.registerData(GrieverEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 
     private static final TrackedData<Integer> BITE_TICKS = DataTracker.registerData(GrieverEntity.class, TrackedDataHandlerRegistry.INTEGER);
@@ -178,21 +172,16 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
 
     protected <T extends GeoAnimatable> AnimationController<T> attackAnimations() {
         return new AnimationController<>("Attack", 0, state -> {
-            if (this.dataTracker.get(BITE_ATTACK) && !state.isCurrentAnimation(ATTACK_BITE_ANIM)) {
+            if (this.dataTracker.get(BITE_ATTACK)) {
                 return state.setAndContinue(ATTACK_BITE_ANIM);
             }
-            if (this.dataTracker.get(STING_ATTACK) && !state.isCurrentAnimation(ATTACK_STING_ANIM)) {
+            if (this.dataTracker.get(STING_ATTACK)) {
                 return state.setAndContinue(ATTACK_STING_ANIM);
             }
-            if (this.dataTracker.get(STRIKE_ATTACK) && !state.isCurrentAnimation(ATTACK_STRIKE_ANIM)) {
+            if (this.dataTracker.get(STRIKE_ATTACK)) {
                 return state.setAndContinue(ATTACK_STRIKE_ANIM);
             }
-            if (state.isCurrentAnimation(ATTACK_BITE_ANIM)
-                    || state.isCurrentAnimation(ATTACK_STING_ANIM)
-                    || state.isCurrentAnimation(ATTACK_STRIKE_ANIM)) {
-                return PlayState.CONTINUE;
-            }
-            this.stopAttacking();
+            state.controller().forceAnimationReset();
             return PlayState.STOP;
         });
     }
@@ -248,7 +237,7 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
             decrementAttackTicks(STING_TICKS, STING_ATTACK);
             decrementAttackTicks(STRIKE_TICKS, STRIKE_ATTACK);
             decrementAttackTicks(ROAR_TICKS, IS_ROARING);
-
+            /*
             if (dataTracker.get(BITE_TICKS) == 7) { // halfway through bite anim
                 LivingEntity target = getTarget();
                 if (target != null && this.squaredDistanceTo(target) <= 16.0D) {
@@ -278,6 +267,7 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
                     target.velocityDirty = true;
                 }
             }
+            */
         }
     }
 
