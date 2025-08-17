@@ -35,5 +35,8 @@ public class ModItems {
             entries.add(FLARE_CURE);
             entries.add(FLARE_INJECTOR);
         });
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.SPAWN_EGGS).register(entries -> {
+            entries.add(GRIEVER_SPAWN_EGG);
+        });
     }
 }
