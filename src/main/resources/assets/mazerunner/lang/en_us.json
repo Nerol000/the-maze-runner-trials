@@ -3,5 +3,8 @@
   "item.mazerunner.flare_cure": "§eCure for Virus: VC321xb47 (3ml)",
   "item.mazerunner.flare_injector": "§eVirus VC321xb47 (EXTREME CAUTION)",
   "item.mazerunner.griever_spawn_egg": "Griever Spawn Egg",
-  "entity.mazerunner.griever": "Griever"
+  "entity.mazerunner.griever": "Griever",
+  "sounds.mazerunner.griever.walk": "Griever Walks",
+  "sounds.mazerunner.griever.bite": "Griever Bites",
+  "sounds.mazerunner.griever.idle": "The Grievers are Near..."
 }

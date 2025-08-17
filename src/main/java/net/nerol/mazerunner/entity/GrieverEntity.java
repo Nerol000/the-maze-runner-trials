@@ -3,6 +3,7 @@ package net.nerol.mazerunner.entity;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.SpiderNavigation;
@@ -12,6 +13,8 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -21,11 +24,12 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.nerol.mazerunner.SoundEvent.ModSounds;
 import net.nerol.mazerunner.TheMazeRunner;
+import net.nerol.mazerunner.effect.ModEffects;
 import net.nerol.mazerunner.entity.goals.GrieverAttackGoal;
-import net.nerol.mazerunner.entity.goals.RoarGoal;
 import net.nerol.mazerunner.item.ModItems;
 import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -44,6 +48,8 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
     private boolean strikeAnimationTriggered = false;
 
     // TrackedData keys for syncing attack states & ticks
+    private static final TrackedData<Boolean> CHASING = DataTracker.registerData(GrieverEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+
     private static final TrackedData<Integer> BITE_TICKS = DataTracker.registerData(GrieverEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Boolean> BITE_ATTACK = DataTracker.registerData(GrieverEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Integer> STING_TICKS = DataTracker.registerData(GrieverEntity.class, TrackedDataHandlerRegistry.INTEGER);
@@ -75,6 +81,8 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
     @Override
     protected void initDataTracker(DataTracker.Builder builder) {
         super.initDataTracker(builder);
+        builder.add(CHASING, false);
+
         builder.add(BITE_TICKS, 0);
         builder.add(BITE_ATTACK, false);
 
@@ -88,6 +96,14 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
         builder.add(IS_ROARING, false);
 
         builder.add(CLIMBING, false);
+    }
+
+    public void setChasing(boolean chasing) {
+        this.dataTracker.set(CHASING, chasing);
+    }
+
+    public boolean isChasing() {
+        return this.dataTracker.get(CHASING);
     }
 
     public void startBiteAttack() {
@@ -117,6 +133,12 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
         this.dataTracker.set(BITE_TICKS, 0);
         this.dataTracker.set(STRIKE_TICKS, 0);
         this.dataTracker.set(STING_TICKS, 0);
+        this.dataTracker.set(BITE_ATTACK, false);
+        this.dataTracker.set(STRIKE_ATTACK, false);
+        this.dataTracker.set(STING_ATTACK, false);
+        biteAnimationTriggered = false;
+        stingAnimationTriggered = false;
+        strikeAnimationTriggered = false;
     }
 
     public void startRoaring() {
@@ -139,29 +161,53 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(roarController());
-        controllers.add(attackAnimations());
+        //controllers.add(roarController());
         controllers.add(climbController());
-        controllers.add(walkIdleController());
-    }
-
-    protected <T extends GeoAnimatable> AnimationController<T> walkIdleController() {
-        return new AnimationController<>("walkIdle", state -> {
-            if (isClimbing()) return PlayState.STOP;
-            return state.setAndContinue(state.isMoving() ? WALK_ANIM : IDLE_ANIM);
-        });
+        controllers.add(attackAnimations());
+        //controllers.add(chaseController());
+        controllers.add(walkIdleChaseController());
     }
 
     protected <T extends GeoAnimatable> AnimationController<T> climbController() {
-        return new AnimationController<>("Climb", test -> {
+        return new AnimationController<>("Climb", 0, test -> {
             if (this.isClimbing())
                 return test.setAndContinue(CLIMB_ANIM);
             return PlayState.STOP;
         });
     }
 
+    protected <T extends GeoAnimatable> AnimationController<T> attackAnimations() {
+        return new AnimationController<>("Attack", 0, state -> {
+            if (this.dataTracker.get(BITE_ATTACK) && !state.isCurrentAnimation(ATTACK_BITE_ANIM)) {
+                return state.setAndContinue(ATTACK_BITE_ANIM);
+            }
+            if (this.dataTracker.get(STING_ATTACK) && !state.isCurrentAnimation(ATTACK_STING_ANIM)) {
+                return state.setAndContinue(ATTACK_STING_ANIM);
+            }
+            if (this.dataTracker.get(STRIKE_ATTACK) && !state.isCurrentAnimation(ATTACK_STRIKE_ANIM)) {
+                return state.setAndContinue(ATTACK_STRIKE_ANIM);
+            }
+            if (state.isCurrentAnimation(ATTACK_BITE_ANIM)
+                    || state.isCurrentAnimation(ATTACK_STING_ANIM)
+                    || state.isCurrentAnimation(ATTACK_STRIKE_ANIM)) {
+                return PlayState.CONTINUE;
+            }
+            this.stopAttacking();
+            return PlayState.STOP;
+        });
+    }
+
+    protected <T extends GeoAnimatable> AnimationController<T> walkIdleChaseController() {
+        return new AnimationController<>("walkIdleChase", state -> {
+            if (isClimbing() || this.dataTracker.get(BITE_ATTACK)
+                    || this.dataTracker.get(STING_ATTACK) || this.dataTracker.get(STRIKE_ATTACK)) return PlayState.STOP;
+
+            return state.isMoving() ? state.setAndContinue(isChasing() ? CHASE_ANIM : WALK_ANIM) : state.setAndContinue(IDLE_ANIM);
+        });
+    }
+
     protected <T extends GeoAnimatable> AnimationController<T> roarController() {
-        return new AnimationController<>("Roar", event -> {
+        return new AnimationController<>("Roar", 0, event -> {
             if (this.dataTracker.get(IS_ROARING)) {
                 return event.setAndContinue(ROAR_ANIM); // always continue while roaring
             }
@@ -172,32 +218,6 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
         });
     }
 
-    protected <T extends GeoAnimatable> AnimationController<T> attackAnimations() {
-        return new AnimationController<>("Attack", state -> {
-
-            // Start attack animation only if it's triggered and not already playing
-            if (this.dataTracker.get(BITE_ATTACK) && !state.isCurrentAnimation(ATTACK_BITE_ANIM)) {
-                state.setAnimation(ATTACK_BITE_ANIM);
-                return PlayState.CONTINUE;
-            }
-            if (this.dataTracker.get(STING_ATTACK) && !state.isCurrentAnimation(ATTACK_STING_ANIM)) {
-                state.setAnimation(ATTACK_STING_ANIM);
-                return PlayState.CONTINUE;
-            }
-            if (this.dataTracker.get(STRIKE_ATTACK) && !state.isCurrentAnimation(ATTACK_STRIKE_ANIM)) {
-                state.setAnimation(ATTACK_STRIKE_ANIM);
-                return PlayState.CONTINUE;
-            }
-
-            // If an attack animation is currently playing, keep it going
-            if (state.isCurrentAnimation(ATTACK_BITE_ANIM)
-                    || state.isCurrentAnimation(ATTACK_STING_ANIM)
-                    || state.isCurrentAnimation(ATTACK_STRIKE_ANIM)) {
-                return PlayState.CONTINUE;
-            }
-            return PlayState.STOP;
-        });
-    }
     @Override
     public void takeKnockback(double strength, double x, double z) {
         if (this.isClimbing()) {
@@ -218,7 +238,6 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
             }
         }
     }
-
     @Override
     public void tick() {
         super.tick();
@@ -229,6 +248,36 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
             decrementAttackTicks(STING_TICKS, STING_ATTACK);
             decrementAttackTicks(STRIKE_TICKS, STRIKE_ATTACK);
             decrementAttackTicks(ROAR_TICKS, IS_ROARING);
+
+            if (dataTracker.get(BITE_TICKS) == 7) { // halfway through bite anim
+                LivingEntity target = getTarget();
+                if (target != null && this.squaredDistanceTo(target) <= 16.0D) {
+                    ServerWorld serverWorld = (ServerWorld) this.getWorld();
+                    target.damage(serverWorld, serverWorld.getDamageSources().mobAttack(this), 10.0f);
+                }
+
+            }
+            if (dataTracker.get(STING_TICKS) == 13) {
+                LivingEntity target = getTarget();
+                if (target != null && this.squaredDistanceTo(target) <= 12.25D) {
+                    ServerWorld serverWorld = (ServerWorld) this.getWorld();
+                    target.damage(serverWorld, serverWorld.getDamageSources().mobAttack(this), 12.0f);
+                    target.addStatusEffect(new StatusEffectInstance(ModEffects.FLARE, 1728000, 0));
+                    this.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 600, 1, false, false));
+                    this.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 900, 1, false, false));
+                    this.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 600, 0, false, false));
+                }
+            }
+            if (dataTracker.get(STRIKE_TICKS) == 8) {
+                LivingEntity target = getTarget();
+                if (target != null && this.squaredDistanceTo(target) <= 10.5625D) {
+                    ServerWorld serverWorld = (ServerWorld) this.getWorld();
+                    target.damage(serverWorld, serverWorld.getDamageSources().mobAttack(this), 14.0f);
+                    Vec3d direction = target.getPos().subtract(this.getPos()).normalize();
+                    target.addVelocity(direction.x * 0.45, -0.66, direction.z * 0.45);
+                    target.velocityDirty = true;
+                }
+            }
         }
     }
 
@@ -262,19 +311,9 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
         this.navigation = new SpiderNavigation(this, this.getWorld());
 
         this.goalSelector.add(0, new SwimGoal(this));
-        this.goalSelector.add(0, new RoarGoal(this));
-        this.goalSelector.add(1, new GrieverAttackGoal(this, 1.05d) {
-            @Override
-            public boolean canStart() {
-                return !GrieverEntity.this.isRoaring() && super.canStart();
-            }
-        });
-        this.goalSelector.add(2, new WanderAroundFarGoal(this, 1.0D) {
-            @Override
-            public boolean canStart() {
-                return !GrieverEntity.this.isRoaring() && super.canStart();
-            }
-        });
+        //this.goalSelector.add(0, new RoarGoal(this));
+        this.goalSelector.add(1, new GrieverAttackGoal(this, 1.05d));
+        this.goalSelector.add(2, new WanderAroundFarGoal(this, 1.0D));
         this.goalSelector.add(3, new LookAroundGoal(this));
     }
 

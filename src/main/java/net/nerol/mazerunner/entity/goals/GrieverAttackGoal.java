@@ -78,14 +78,16 @@ public class GrieverAttackGoal extends Goal {
     public void start() {
         // No need to check LOS here, done in tick()
         this.entity.setAttacking(true);
+        if (hasLineOfSight) this.entity.setChasing(true);
         this.cooldown = 0;
     }
 
     @Override
     public void stop() {
         target = null;
-        entity.stopAttacking();
+        this.entity.stopAttacking();
         this.entity.setAttacking(false);
+        this.entity.setChasing(false);
         this.entity.getNavigation().stop();
     }
 
@@ -96,12 +98,13 @@ public class GrieverAttackGoal extends Goal {
         if (cooldown > 0) cooldown--;
 
         hasLineOfSight = checkLineOfSight(target);
+        this.entity.setChasing(hasLineOfSight);
 
         moveToTarget();
 
         double distanceSq = entity.squaredDistanceTo(target);
 
-        if (distanceSq <= 4.0D && isCooledDown()) {
+        if (distanceSq <= 16.0D && isCooledDown()) {
             resetCooldown();
             this.entity.swingHand(Hand.MAIN_HAND);
             this.entity.tryAttack(getServerWorld(this.entity), target);
@@ -122,7 +125,6 @@ public class GrieverAttackGoal extends Goal {
         else {
             speedFactor = 1.0d;
         }
-
         entity.getNavigation().startMovingTo(target.getX(), target.getY(), target.getZ(), speed * speedFactor);
     }
 
