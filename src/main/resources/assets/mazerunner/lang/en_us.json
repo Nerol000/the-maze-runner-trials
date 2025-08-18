@@ -6,5 +6,6 @@
   "entity.mazerunner.griever": "Griever",
   "sounds.mazerunner.griever.walk": "Griever Walks",
   "sounds.mazerunner.griever.bite": "Griever Bites",
-  "sounds.mazerunner.griever.idle": "The Grievers are Near..."
+  "sounds.mazerunner.griever.idle": "The Grievers are Near...",
+  "sounds.mazerunner.griever.roar": "Griever Roars"
 }

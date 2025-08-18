@@ -3,11 +3,9 @@ package net.nerol.mazerunner.entity.animations;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.registry.Registries;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
-import net.nerol.mazerunner.TheMazeRunner;
+import net.nerol.mazerunner.SoundEvent.ModSounds;
 import net.nerol.mazerunner.effect.ModEffects;
 import net.nerol.mazerunner.entity.GrieverEntity;
 
@@ -41,8 +39,7 @@ public class AttackAnimations {
         if (attacker.squaredDistanceTo(target) <= 16.0D && !attacker.getWorld().isClient()) {
             ServerWorld serverWorld = (ServerWorld) attacker.getWorld();
             target.damage(serverWorld, serverWorld.getDamageSources().mobAttack(attacker), 10.0f);
-            attacker.playSound(Registries.SOUND_EVENT.get(
-                    Identifier.of(TheMazeRunner.MOD_ID, "griever.bite")), 1.0f, 1.0f);
+            attacker.playSound(ModSounds.GRIEVER_BITE, 1.0f, 1.0f);
             attacker.startBiteAttack();
         }
     }
