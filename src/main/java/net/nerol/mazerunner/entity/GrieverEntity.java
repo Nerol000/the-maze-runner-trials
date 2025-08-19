@@ -62,6 +62,8 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
 
     private static final TrackedData<Boolean> CLIMBING = DataTracker.registerData(GrieverEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 
+    private static final TrackedData<Boolean> LEAPING = DataTracker.registerData(GrieverEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+
     protected static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("animation.idle");
     protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("animation.walk");
     protected static final RawAnimation ATTACK_BITE_ANIM = RawAnimation.begin().thenPlay("animation.attack_bite");
@@ -71,6 +73,7 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
     protected static final RawAnimation CLIMB_ANIM = RawAnimation.begin().thenLoop("animation.climb");
     protected static final RawAnimation SNIFF_ANIM = RawAnimation.begin().thenPlay("animation.sniff");
     protected static final RawAnimation ROAR_ANIM = RawAnimation.begin().thenPlay("animation.roar");
+    protected static final RawAnimation LEAP_ANIM = RawAnimation.begin().thenPlayAndHold("animation.leap");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -99,6 +102,7 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
         builder.add(SNIFFING, false);
 
         builder.add(CLIMBING, false);
+        builder.add(LEAPING, false);
     }
 
     public void setChasing(boolean chasing) {
@@ -160,6 +164,10 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
         }
     }
 
+    public void setLeaping(boolean bool) {
+        this.dataTracker.set(LEAPING, bool);
+    }
+
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return this.cache;
@@ -172,11 +180,21 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(leapController());
         controllers.add(sniffController());
         controllers.add(roarController());
         controllers.add(climbController());
         controllers.add(attackAnimations());
         controllers.add(walkIdleChaseController());
+    }
+
+    protected <T extends GeoAnimatable> AnimationController<T> leapController() {
+        return new AnimationController<>("Leap", 0, test -> {
+            if (this.dataTracker.get(LEAPING))
+                return test.setAndContinue(LEAP_ANIM);
+            if (!this.isOnGround()) return PlayState.CONTINUE;
+            return PlayState.STOP;
+        });
     }
 
     protected <T extends GeoAnimatable> AnimationController<T> climbController() {
@@ -205,8 +223,13 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
 
     protected <T extends GeoAnimatable> AnimationController<T> walkIdleChaseController() {
         return new AnimationController<>("walkIdleChase", state -> {
-            if (this.dataTracker.get(SNIFFING) || this.dataTracker.get(IS_ROARING) || isClimbing() || this.dataTracker.get(BITE_ATTACK)
-                    || this.dataTracker.get(STING_ATTACK) || this.dataTracker.get(STRIKE_ATTACK)) return PlayState.STOP;
+            if (this.dataTracker.get(LEAPING) ||
+                    this.dataTracker.get(SNIFFING) ||
+                    this.dataTracker.get(IS_ROARING) ||
+                    isClimbing() ||
+                    this.dataTracker.get(BITE_ATTACK) ||
+                    this.dataTracker.get(STING_ATTACK) ||
+                    this.dataTracker.get(STRIKE_ATTACK)) return PlayState.STOP;
 
             return state.isMoving() ? state.setAndContinue(isChasing() ? CHASE_ANIM : WALK_ANIM) : state.setAndContinue(IDLE_ANIM);
         });
@@ -252,6 +275,7 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
             }
         }
     }
+
     @Override
     public void tick() {
         super.tick();
@@ -298,9 +322,8 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
         this.navigation = new SpiderNavigation(this, this.getWorld());
 
         this.goalSelector.add(0, new SwimGoal(this));
-        //this.goalSelector.add(0, new RoarGoal(this));
         this.goalSelector.add(1, new GrieverAttackGoal(this, 1.05d));
-        this.goalSelector.add(2, new WanderAroundFarGoal(this, 1.0D));
+        this.goalSelector.add(3, new WanderAroundFarGoal(this, 1.0D));
         this.goalSelector.add(3, new LookAroundGoal(this));
         this.goalSelector.add(4, new GrieverAmbientGoal(this));
     }

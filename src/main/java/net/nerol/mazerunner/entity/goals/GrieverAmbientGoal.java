@@ -2,6 +2,7 @@ package net.nerol.mazerunner.entity.goals;
 
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.Vec3d;
 import net.nerol.mazerunner.SoundEvent.ModSounds;
 import net.nerol.mazerunner.entity.GrieverEntity;
 
@@ -29,6 +30,7 @@ public class GrieverAmbientGoal extends Goal {
         if (griever.getWorld().isClient()) return;
 
         this.griever.getNavigation().stop();
+        griever.setVelocity(Vec3d.ZERO);
         if (griever.getRandom().nextBoolean()) {
             griever.setRoaring(true);
             griever.playSound(ModSounds.GRIEVER_ROAR, 20.0f, 1.0f);

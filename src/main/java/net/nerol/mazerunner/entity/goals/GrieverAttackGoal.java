@@ -9,6 +9,8 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.nerol.mazerunner.entity.GrieverEntity;
 import net.nerol.mazerunner.entity.animations.AttackAnimations;
@@ -25,6 +27,9 @@ public class GrieverAttackGoal extends Goal {
     private final double sightRange = 200.0;
     private int cooldown;
     private boolean hasLineOfSight;
+    private int leapCooldown = 0;
+    private int windupTicks = 0;
+    private boolean isWindingUp = false;
 
     public GrieverAttackGoal(GrieverEntity entity, double speed) {
         this.entity = entity;
@@ -34,6 +39,7 @@ public class GrieverAttackGoal extends Goal {
 
     @Override
     public boolean canStart() {
+
         List<LivingEntity> entities = entity.getWorld().getEntitiesByClass(
                 LivingEntity.class,
                 new Box(entity.getX() - sightRange, entity.getY() - sightRange, entity.getZ() - sightRange,
@@ -88,6 +94,7 @@ public class GrieverAttackGoal extends Goal {
         this.entity.stopAttacking();
         this.entity.setAttacking(false);
         this.entity.setChasing(false);
+        this.entity.setLeaping(false);
         this.entity.getNavigation().stop();
     }
 
@@ -96,13 +103,37 @@ public class GrieverAttackGoal extends Goal {
         if (target == null) return;
 
         if (cooldown > 0) cooldown--;
+        if (leapCooldown > 0) leapCooldown--;
 
         hasLineOfSight = checkLineOfSight(target);
         this.entity.setChasing(hasLineOfSight);
 
-        moveToTarget();
-
         double distanceSq = entity.squaredDistanceTo(target);
+
+        if (!isWindingUp && distanceSq > 625.0D && hasLineOfSight && isCooledDown() && leapCooldown <= 0) {
+            resetCooldown();
+            entity.setLeaping(true);
+            leapCooldown = 400;
+            windupTicks = 9;
+            isWindingUp = true;
+            this.entity.getNavigation().stop();
+            entity.setVelocity(Vec3d.ZERO);
+            return;
+        }
+
+        if (isWindingUp) {
+            windupTicks--;
+            if (windupTicks <= 0) {
+                leapTowardTarget();
+                leapCooldown = 400;
+                isWindingUp = false;
+            }
+            return; // skip movement while winding up
+        }
+
+        if (entity.isOnGround()) entity.setLeaping(false);
+
+        moveToTarget();
 
         if (distanceSq <= 16.0D && isCooledDown()) {
             resetCooldown();
@@ -110,6 +141,31 @@ public class GrieverAttackGoal extends Goal {
             this.entity.tryAttack(getServerWorld(this.entity), target);
             AttackAnimations.performRandomAttack(entity, target);
         }
+    }
+
+    private void leapTowardTarget() {
+        Vec3d from = entity.getPos();
+        Vec3d to = target.getPos();
+
+        double dx = to.x - from.x;
+        double dz = to.z - from.z;
+        double dy = to.y - from.y;
+
+        Vec3d horizontal = new Vec3d(dx, 0, dz);
+        double horizontalDistance = horizontal.length();
+        if (horizontalDistance < 1e-6) return;
+
+        Vec3d direction = horizontal.normalize();
+
+        double horizontalVelocity = 2.75d;
+
+        Vec3d leapHorizontal = direction.multiply(horizontalVelocity);
+        double verticalBoost = 1.0 + MathHelper.clamp(dy / 10.0, 0.0, 0.3);
+
+        // Final velocity
+        Vec3d leapVelocity = new Vec3d(leapHorizontal.x, verticalBoost, leapHorizontal.z);
+        entity.setVelocity(leapVelocity);
+        entity.velocityDirty = true;
     }
 
     private void moveToTarget() {
