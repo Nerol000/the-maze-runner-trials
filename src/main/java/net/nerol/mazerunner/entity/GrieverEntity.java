@@ -24,6 +24,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.nerol.mazerunner.SoundEvent.ModSounds;
 import net.nerol.mazerunner.TheMazeRunner;
+import net.nerol.mazerunner.effect.ModEffects;
 import net.nerol.mazerunner.entity.goals.GrieverAmbientGoal;
 import net.nerol.mazerunner.entity.goals.GrieverAttackGoal;
 import net.nerol.mazerunner.item.ModItems;
@@ -279,6 +280,10 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
     @Override
     public void tick() {
         super.tick();
+
+        if (this.hasStatusEffect(ModEffects.FLARE)) {
+            this.removeStatusEffect(ModEffects.FLARE);
+        }
 
         if (!this.getWorld().isClient) {
             this.dataTracker.set(CLIMBING, this.horizontalCollision);
