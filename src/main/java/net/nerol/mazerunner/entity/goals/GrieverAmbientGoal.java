@@ -34,13 +34,11 @@ public class GrieverAmbientGoal extends Goal {
         if (griever.getRandom().nextBoolean()) {
             griever.setRoaring(true);
             griever.playSound(ModSounds.GRIEVER_ROAR, 20.0f, 1.0f);
-            System.out.println("Griever roaring");
 
         }
         else {
             griever.setSniffing(true);
             griever.playSound(SoundEvents.ENTITY_WARDEN_SNIFF, 5.0f, 1.0f);
-            System.out.println("Griever sniffing");
         }
         cooldown = getNewCooldown();
     }

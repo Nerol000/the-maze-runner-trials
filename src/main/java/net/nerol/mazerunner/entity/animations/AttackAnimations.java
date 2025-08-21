@@ -38,7 +38,7 @@ public class AttackAnimations {
     private static void performBiteAttack(GrieverEntity attacker, LivingEntity target) {
         if (attacker.squaredDistanceTo(target) <= 16.0D && !attacker.getWorld().isClient()) {
             ServerWorld serverWorld = (ServerWorld) attacker.getWorld();
-            target.damage(serverWorld, serverWorld.getDamageSources().mobAttack(attacker), 10.0f);
+            target.damage(serverWorld, serverWorld.getDamageSources().mobAttack(attacker), 9.0f);
             attacker.playSound(ModSounds.GRIEVER_BITE, 1.0f, 1.0f);
             attacker.startBiteAttack();
         }

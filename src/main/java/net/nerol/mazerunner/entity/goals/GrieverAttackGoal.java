@@ -53,6 +53,7 @@ public class GrieverAttackGoal extends Goal {
 
         if (closestPlayer != null && canAttack(closestPlayer)) {
             target = closestPlayer;
+            entity.setTarget(target);
             return true;
         }
 
@@ -63,10 +64,12 @@ public class GrieverAttackGoal extends Goal {
 
         if (closestOther != null && canAttack(closestOther)) {
             target = closestOther;
+            entity.setTarget(target);
             return true;
         }
 
         target = null;
+        entity.setTarget(null);
         return false;
     }
 
@@ -91,6 +94,7 @@ public class GrieverAttackGoal extends Goal {
     @Override
     public void stop() {
         target = null;
+        this.entity.setTarget(null);
         this.entity.stopAttacking();
         this.entity.setAttacking(false);
         this.entity.setChasing(false);
@@ -101,6 +105,14 @@ public class GrieverAttackGoal extends Goal {
     @Override
     public void tick() {
         if (target == null) return;
+
+        target = this.entity.getTarget();
+
+        if (entity.isRoaring()) {
+            entity.setVelocity(Vec3d.ZERO);
+            entity.getNavigation().stop();
+            return;
+        }
 
         if (cooldown > 0) cooldown--;
         if (leapCooldown > 0) leapCooldown--;
@@ -118,6 +130,7 @@ public class GrieverAttackGoal extends Goal {
             isWindingUp = true;
             this.entity.getNavigation().stop();
             entity.setVelocity(Vec3d.ZERO);
+            entity.getLookControl().lookAt(target, 30.0F, 30.0F);
             return;
         }
 
@@ -132,7 +145,6 @@ public class GrieverAttackGoal extends Goal {
         }
 
         if (entity.isOnGround()) entity.setLeaping(false);
-
         moveToTarget();
 
         if (distanceSq <= 16.0D && isCooledDown()) {
@@ -169,7 +181,7 @@ public class GrieverAttackGoal extends Goal {
     }
 
     private void moveToTarget() {
-        if (target == null) return;
+        if (target == null || entity.isRoaring()) return;
 
         double speedFactor;
         if (entity.isClimbing() && hasLineOfSight) {

@@ -11,7 +11,6 @@ public class GrieverRenderer extends GeoEntityRenderer<GrieverEntity, GrieverRen
         super(context, new GrieverModel());
         this.shadowRadius = 1.0f;
 
-        // Add the emissive layer
         this.addRenderLayer(new AutoGlowingGeoLayer<>(this));
     }
 }

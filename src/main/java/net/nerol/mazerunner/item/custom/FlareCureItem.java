@@ -14,6 +14,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.World;
 import net.nerol.mazerunner.effect.ModEffects;
+import net.nerol.mazerunner.entity.GrieverEntity;
 
 public class FlareCureItem extends Item {
 
@@ -63,6 +64,20 @@ public class FlareCureItem extends Item {
     public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity target, Hand hand) {
         if (!target.getWorld().isClient) {
             ServerWorld serverWorld = (ServerWorld) user.getWorld();
+
+            if (target instanceof GrieverEntity) {
+                target.damage(serverWorld, serverWorld.getDamageSources().cactus(), 7.5f);
+                if (!user.getAbilities().creativeMode) {
+                    stack.decrement(1);
+                }
+
+                target.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 300, 0,false,false));
+                target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 1800, 1, false, false));
+                target.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 2000, 1, false, false));
+                user.getItemCooldownManager().set(stack, 100);
+
+                return ActionResult.SUCCESS;
+            }
 
             if (target.hasStatusEffect(ModEffects.FLARE)) {
                 target.removeStatusEffect(ModEffects.FLARE);
