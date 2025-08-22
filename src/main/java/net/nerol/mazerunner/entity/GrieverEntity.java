@@ -273,7 +273,7 @@ public class GrieverEntity extends HostileEntity implements GeoAnimatable {
 
     @Override
     public void takeKnockback(double strength, double x, double z) {
-        if (this.isClimbing()) {
+        if (this.isClimbing() || this.isRoaring()) {
             return;
         }
         super.takeKnockback(strength, x, z);

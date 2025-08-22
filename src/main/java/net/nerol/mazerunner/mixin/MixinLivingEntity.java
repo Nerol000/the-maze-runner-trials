@@ -26,11 +26,9 @@ public abstract class MixinLivingEntity {
         if (attacker instanceof LivingEntity livingAttacker) {
             if (livingAttacker.hasStatusEffect(ModEffects.FLARE)) {
                 LivingEntity self = (LivingEntity)(Object)this;
-
                 // 50% chance of getting the Flare effect
-                if (RANDOM.nextFloat() < (float)(1/3) + (float)(Objects.requireNonNull(livingAttacker.getStatusEffect(ModEffects.FLARE)).getAmplifier() / 10)) {
-                    self.addStatusEffect(new StatusEffectInstance(
-                            ModEffects.FLARE, 1728000, 0)); // 24 hrs, amplifier 0
+                if (RANDOM.nextFloat() < 0.3333f + (float)(Objects.requireNonNull(livingAttacker.getStatusEffect(ModEffects.FLARE)).getAmplifier() / 10)) {
+                    self.addStatusEffect(new StatusEffectInstance( ModEffects.FLARE, 1728000, 0)); // 24 hrs, amplifier 0
                 }
             }
         }
